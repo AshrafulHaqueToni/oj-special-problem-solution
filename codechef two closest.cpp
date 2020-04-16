@@ -43,7 +43,7 @@ int min_distance()
             if(dis[u]>re)
                 break;
 
-            if(good==3 && ar[u]==1)
+            if(good==2 && ar[u]==1)
             {
                 re=min(re,dis[u]);
                 break;
