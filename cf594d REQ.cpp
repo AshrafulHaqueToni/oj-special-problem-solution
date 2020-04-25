@@ -1,15 +1,9 @@
 #include<bits/stdc++.h>
 using namespace std;
-//#pragma GCC optimize("Ofast")
-//#pragma GCC target("avx,avx2,fma")
-//#pragma GCC target ("avx2")
-//#pragma GCC optimization ("O3")
-//#pragma GCC optimization ("unroll-loops")
 #define mx 200005
 #define mod 1000000007
 #define N 1000000
 #define ll long long
-int ar[mx],cnt[N+5],block;
 vector<int>pf[mx];
 ll re=1,ans[mx],minu=1,plu=1;
 
@@ -22,62 +16,75 @@ ll bigmod(ll e,ll x)
     return p;
 }
 
-struct me
+namespace MO
 {
-    int l,r,idx,ld;
-    bool operator < (const me &p) const {
-        if(ld < p.ld) return true;
-        else if(ld == p.ld) {
-            if(ld&1) {
-                if(r < p.r) return true;
-                else return false;
-            }
-            else {
-                if(r > p.r) return true;
-                else return false;
-            }
-        }
-        else return false;
-    }
-} tree[mx*4];
+const int MAXN = 200005;
+const int MAXQ = 200005;
 
+int Sz;
+int ar[MAXN];
+int blkId[MAXN];
+bool vis[MAXN];
+int cnt[N];
 
-void Add(int pos)
+struct Query
 {
-    re*=ar[pos];
-    re%=mod;
-   // cout<<ar[pos]<<": ";
-    for(auto it:pf[pos])
+    int L,R,id;
+    Query() {}
+    Query(int x,int y,int i)
     {
-        cnt[it]++;
-       // cout<<it.first<<" ";
-        if(cnt[it]==1)
-        {
-            plu*=it-1;
-            plu%=mod;
-            minu*=it;
-            minu%=mod;
-        }
+        L=x;
+        R=y;
+        id=i;
     }
-   // cout<<endl;
-}
-
-void Remove(int pos)
-{
-    minu*=ar[pos];
-    minu%=mod;
-    for(auto it:pf[pos])
+    bool operator<(const Query other) const
     {
-        cnt[it]--;
-        if(cnt[it]==0)
+        int a = blkId[L];
+        int b = blkId[other.L];
+        return a == b ? (a & 1 ? (R > other.R) : (R < other.R)) : a < b;
+    }
+} qry[MAXQ];
+int perQ[MAXQ];
+
+void Check(int pos)
+{
+    if(!vis[pos])
+    {
+        vis[pos]=1;
+        re*=ar[pos];
+        re%=mod;
+        for(auto it:pf[pos])
         {
-            plu*=it;
-            plu%=mod;
-            minu*=it-1;
-            minu%=mod;
+            cnt[it]++;
+            if(cnt[it]==1)
+            {
+                plu*=it-1;
+                plu%=mod;
+                minu*=it;
+                minu%=mod;
+            }
+        }
+    }
+    else
+    {
+        vis[pos]=0;
+        minu*=ar[pos];
+        minu%=mod;
+        for(auto it:pf[pos])
+        {
+            cnt[it]--;
+            if(cnt[it]==0)
+            {
+                plu*=it;
+                plu%=mod;
+                minu*=it-1;
+                minu%=mod;
+            }
         }
     }
 }
+}
+using namespace MO;
 
 ll fina()
 {
@@ -94,7 +101,7 @@ void for_pf(int tem)
         pf[tem].push_back(2);
         while(x%2==0)x/=2;
     }
-    for(int i=3;i*i<=x;i+=2)
+    for(int i=3; i*i<=x; i+=2)
     {
         if(x%i==0)
         {
@@ -104,50 +111,40 @@ void for_pf(int tem)
     }
     if(x>1)pf[tem].push_back(x);
 }
+
 int main()
 {
-    int n;
+    int n,Q;
     scanf("%d",&n);
-    block=sqrt(n);
-    for(int i=0; i<n; i++)
-    {
-        scanf("%d",ar+i);
-        for_pf(i);
-    }
-    int q;
-    scanf("%d",&q);
 
-    for(int i=0; i<q; i++)
+    //Initiate Global
+    Sz=sqrt(n);
+    memset(vis,0,sizeof(vis));
+    memset(cnt,0,sizeof(cnt));
+    for(int i=0; i<=n; i++) blkId[i] = i/Sz;
+    for(int i=1; i<=n; i++) scanf("%d",&ar[i]),for_pf(i);
+    scanf("%d",&Q);
+    for(int i=1; i<=Q; i++)
     {
-        scanf("%d%d",&tree[i].l,&tree[i].r);
-        tree[i].l--;
-        tree[i].r--;
-        tree[i].idx=i;
-        tree[i].ld=tree[i].l/block;
+        int l,r;
+        scanf("%d %d",&l,&r);
+        qry[i] = Query(l,r,i);
     }
-    sort(tree,tree+q);
-    int cur_l=0,cur_r=0;
-    for(int i=0; i<q; i++)
+    sort(qry+1,qry+Q+1);
+
+    int left = qry[1].L;
+    int right = left-1;
+
+    for(int i=1; i<=Q; i++)
     {
-        int l=tree[i].l,r=tree[i].r;
-        while(cur_l>l)
-            Add(--cur_l);
-        while(cur_r<=r)
-            Add(cur_r++);
-        while(cur_l<l)
-            Remove(cur_l++);
-        while(cur_r>r+1)
-            Remove(--cur_r);
-        ans[tree[i].idx]=fina();
-       // cout<<tree[i].idx<<endl;
+        Query now = qry[i];
+        while(left<now.L)  Check(left++);
+        while(left>now.L)  Check(--left);
+        while(right<now.R) Check(++right);
+        while(right>now.R) Check(right--);
+        perQ[now.id] = fina();
     }
-    for(int i=0; i<q; i++)
-    {
-        printf("%lld\n",ans[i]);
-    }
+    for(int i=1; i<=Q; i++)printf("%d\n",perQ[i]);
 
     return 0;
 }
-
-
-
