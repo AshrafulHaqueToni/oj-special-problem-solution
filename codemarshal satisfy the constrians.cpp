@@ -1,6 +1,6 @@
 #include<bits/stdc++.h>
 using namespace std;
-
+///https://l.facebook.com/l.php?u=https%3A%2F%2Falgo.codemarshal.org%2Fcontests%2Fsub_iupc_19%2Fproblems%2FB%3Ffbclid%3DIwAR1i0_k6hB-w0FhPHQKP_kFb-8ABHtde1ki3lYwPV9R4mmh4OmQKM7DWni4&h=AT1o5U6OWRZC6YJVu0wPabSmkhFuKZUgtaoFrVLnXfJiaggAZJu9_-Tmw9sIzOLfZK76r8YQ0Yb7FwM4CPGv-NWLEM4gxGhPSJzjGeUlcqw81HSar8WpnTkOcvFY0HRHzqFasQ
 #define mx 100005
 #define N 1000000
 #define ll long long
